@@ -1,0 +1,7 @@
+{
+  "appId": "com.dilimle.app",
+  "appName": "Dilimle",
+  "webDir": "www",
+  "backgroundColor": "#0e1522",
+  "server": { "androidScheme": "https" }
+}
