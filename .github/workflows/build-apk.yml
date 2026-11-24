@@ -1,0 +1,65 @@
+name: APK Olustur
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Kodu al
+        uses: actions/checkout@v4
+
+      - name: Node kur
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Java kur
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Paketleri yukle
+        run: npm install
+
+      - name: Web dosyalarini hazirla
+        run: |
+          mkdir -p www
+          cp index.html manifest.json www/
+          cp -r icons www/
+          cp node_modules/jszip/dist/jszip.min.js www/
+
+      - name: Android projesini olustur
+        run: |
+          npx cap add android
+          npx capacitor-assets generate --android
+          npx cap sync android
+
+      - name: APK derle
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: APK dosyasini adlandir
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk Dilimle.apk
+
+      - name: APK'yi Actions'a yukle
+        uses: actions/upload-artifact@v4
+        with:
+          name: Dilimle-APK
+          path: Dilimle.apk
+
+      - name: Releases sayfasina yayinla
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ github.run_number }}
+          name: Dilimle v${{ github.run_number }}
+          files: Dilimle.apk
